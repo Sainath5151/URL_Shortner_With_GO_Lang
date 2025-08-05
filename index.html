@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>URL Shortener</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-lg p-8 max-w-xl w-full">
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">🔗 URL Shortener</h1>
+    <form id="url-form" class="space-y-4">
+      <input
+        type="url"
+        id="url-input"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+        placeholder="Enter your long URL"
+        required
+      />
+      <button
+        type="submit"
+        class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 transition"
+      >
+        Shorten URL
+      </button>
+    </form>
+
+    <div id="result" class="mt-6 hidden">
+      <p class="text-gray-700">Your shortened URL:</p>
+      <a
+        id="short-url"
+        href="#"
+        target="_blank"
+        class="text-indigo-600 underline break-all"
+      ></a>
+    </div>
+
+    <div id="error" class="mt-4 text-red-600 hidden"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('url-form');
+    const input = document.getElementById('url-input');
+    const result = document.getElementById('result');
+    const shortUrlElement = document.getElementById('short-url');
+    const errorElement = document.getElementById('error');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const url = input.value.trim();
+      errorElement.classList.add('hidden');
+      result.classList.add('hidden');
+
+      try {
+        const response = await fetch('http://localhost:3000/shorten', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ url })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to shorten URL');
+        }
+
+        const data = await response.json();
+        const shortId = data.url;
+        const shortUrl = `http://localhost:3000/redirect/${shortId}`;
+        shortUrlElement.href = shortUrl;
+        shortUrlElement.textContent = shortUrl;
+        result.classList.remove('hidden');
+      } catch (error) {
+        errorElement.textContent = error.message || 'An error occurred';
+        errorElement.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
